@@ -1,0 +1,25 @@
+# Go build and test artifacts
+bin/
+tmp/
+*.exe
+*.test
+*.out
+
+# Air live-reload artifacts
+build-errors.log
+
+# Environment and secret files
+.env
+.env.*
+!.env.example
+
+# Dependency and coverage caches
+vendor/
+coverage.out
+
+# IDE and OS files
+.idea/
+.vscode/*
+!.vscode/settings.json
+.DS_Store
+Thumbs.db

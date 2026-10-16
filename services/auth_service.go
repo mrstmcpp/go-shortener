@@ -58,28 +58,26 @@ func (s *AuthService) SignUp(name, email, password string) (*models.User, error)
 func (s *AuthService) SignIn(email, password string) (string, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
 
-	if email == "" {
-		return "", errors.New("Invalid email")
+	if email == "" || password == "" {
+		return "", errors.New("email and password are required")
 	}
 
-	user, err := repositories.NewUserRepository().FindByEmail(email)
+	user, err := s.userRepo.FindByEmail(email)
+
+	// fmt.Println(user)
+	if err != nil {
+		return "", errors.New("invalid email or password")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		return "", errors.New("Invalid email or password")
+	}
+
+	token, err := utils.CreateToken(user.ID)
 
 	if err != nil {
-		return "User not found", nil
-	}
-
-	hash := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
-
-	if hash != nil {
-		return "Invalid password", nil
-	}
-
-	token, err := utils.CreateToken(email)
-
-	if err != nil {
-		return "Error while token creation", nil
+		return "", err
 	}
 
 	return token, nil
-
 }

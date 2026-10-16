@@ -79,15 +79,14 @@ func (s *AuthHandler) SignIn(c *gin.Context) {
 	user, err := s.authService.SignIn(req.Email, req.Password)
 
 	if err != nil {
-		if errors.Is(err, utils.ErrEmailNotExists) {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Could not find user with provided email",
-			})
-			return
-		}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  "Could not find user with provided email",
+			"error2": err,
+		})
+		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Successfully logged in",
 		"token":   user,
 	})

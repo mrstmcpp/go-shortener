@@ -1,26 +1,28 @@
 package utils
 
 import (
+	"errors"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-var secretKey = []byte("mrstm349245jksfhsfskd")
+func CreateToken(userId bson.ObjectID) (string, error) {
+	secretKey := os.Getenv("JWT_SECRET")
 
-func CreateToken(email string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"email": email,
-			"exp":   time.Now().Add(time.Hour * 24).Unix(),
-		})
-
-	tokenString, err := token.SignedString(secretKey)
-
-	if err != nil {
-		return "Error while generating tokens", err
+	if secretKey == "" {
+		return "", errors.New("JWT_SECRET is not configured")
 	}
 
-	return tokenString, err
+	claims := jwt.RegisteredClaims{
+		Subject:   userId.Hex(),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+	}
 
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	// fmt.Println(token.Claims)
+	return token.SignedString([]byte(secretKey))
 }
