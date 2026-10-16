@@ -25,6 +25,11 @@ type SignUpRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type SignInRequest struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
 func (h *AuthHandler) SignUp(c *gin.Context) {
 	var req SignUpRequest
 
@@ -58,5 +63,32 @@ func (h *AuthHandler) SignUp(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Account created successfully",
 		"user":    user,
+	})
+}
+
+func (s *AuthHandler) SignIn(c *gin.Context) {
+	var req SignInRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Valid email, and password are required",
+		})
+		return
+	}
+
+	user, err := s.authService.SignIn(req.Email, req.Password)
+
+	if err != nil {
+		if errors.Is(err, utils.ErrEmailNotExists) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Could not find user with provided email",
+			})
+			return
+		}
+	}
+
+	c.JSON(http.StatusAccepted, gin.H{
+		"message": "Successfully logged in",
+		"token":   user,
 	})
 }

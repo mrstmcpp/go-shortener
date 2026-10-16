@@ -54,3 +54,32 @@ func (s *AuthService) SignUp(name, email, password string) (*models.User, error)
 	return user, nil
 
 }
+
+func (s *AuthService) SignIn(email, password string) (string, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
+
+	if email == "" {
+		return "", errors.New("Invalid email")
+	}
+
+	user, err := repositories.NewUserRepository().FindByEmail(email)
+
+	if err != nil {
+		return "User not found", nil
+	}
+
+	hash := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+
+	if hash != nil {
+		return "Invalid password", nil
+	}
+
+	token, err := utils.CreateToken(email)
+
+	if err != nil {
+		return "Error while token creation", nil
+	}
+
+	return token, nil
+
+}

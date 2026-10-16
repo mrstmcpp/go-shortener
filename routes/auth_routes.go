@@ -16,5 +16,6 @@ func RegisterAuthRoutes(router *gin.Engine) {
 	auth := router.Group("/api/v1/auth")
 	{
 		auth.POST("/signup", authHandler.SignUp)
+		auth.POST("/signin", authHandler.SignIn)
 	}
 }
