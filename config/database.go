@@ -34,14 +34,24 @@ func ConnectDB() {
 
 	DB = client.Database("go_shortener")
 
-	indexModel := mongo.IndexModel{
+	userEmailIndex := mongo.IndexModel{
 		Keys:    bson.D{{Key: "email", Value: 1}},
 		Options: options.Index().SetUnique(true),
 	}
 
-	_, err = DB.Collection("users").Indexes().CreateOne(ctx, indexModel)
+	_, err = DB.Collection("users").Indexes().CreateOne(ctx, userEmailIndex)
 	if err != nil {
 		log.Fatal("Failed to create email index", err)
+	}
+
+	urlIndex := mongo.IndexModel{
+		Keys:    bson.D{{Key: "short_code", Value: 1}},
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err = DB.Collection("urls").Indexes().CreateOne(ctx, urlIndex)
+	if err != nil {
+		log.Fatal("Failed to create urls index", err)
 	}
 
 	log.Println("MongoDB Connected Successfully.")
