@@ -80,8 +80,7 @@ func (s *AuthHandler) SignIn(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":  "Could not find user with provided email",
-			"error2": err,
+			"error": "Could not find user with provided email",
 		})
 		return
 	}

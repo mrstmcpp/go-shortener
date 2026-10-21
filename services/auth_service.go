@@ -64,7 +64,6 @@ func (s *AuthService) SignIn(email, password string) (string, error) {
 
 	user, err := s.userRepo.FindByEmail(email)
 
-	// fmt.Println(user)
 	if err != nil {
 		return "", errors.New("invalid email or password")
 	}
@@ -78,6 +77,7 @@ func (s *AuthService) SignIn(email, password string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// fmt.Println(user)
 
 	return token, nil
 }

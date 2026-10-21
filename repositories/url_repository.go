@@ -121,3 +121,33 @@ func (r *UrlRepository) DeleteByIDAndUserID(id, userId bson.ObjectID) error {
 	}
 	return nil
 }
+
+func (r *UrlRepository) IncrementClickCount(shortCode string) error {
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		5*time.Second,
+	)
+
+	defer cancel()
+
+	result, err := r.collection.UpdateOne(
+		ctx,
+		bson.D{
+			{Key: "short_code", Value: shortCode},
+		},
+		bson.D{{
+			Key: "$inc", Value: bson.D{
+				{Key: "clicks", Value: 1},
+			},
+		}},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}

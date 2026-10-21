@@ -12,4 +12,5 @@ type Url struct {
 	OriginalUrl string        `bson:"original_url" json:"originalUrl"`
 	ShortCode   string        `bson:"short_code" json:"shortCode"`
 	CreatedAt   time.Time     `bson:"created_at" json:"createdAt"`
+	Clicks      int           `bson:"clicks" json:"clicks"`
 }

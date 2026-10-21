@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type URLService struct {
@@ -58,4 +59,23 @@ func (s *URLService) CreateNewUrl(originalUrl string, userID bson.ObjectID) (*mo
 	}
 
 	return nil, errors.New("Could not generate a unique code")
+}
+
+func (s *URLService) RedirectURL(code string) (*models.Url, error) {
+	code = strings.TrimSpace(code)
+	if code == "" {
+		return nil, mongo.ErrNoDocuments
+	}
+
+	record, err := s.urlRepo.FindByShortCode(code)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.urlRepo.IncrementClickCount(code); err != nil {
+		return nil, err
+	}
+
+	record.Clicks++
+	return record, nil
 }

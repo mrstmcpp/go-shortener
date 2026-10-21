@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-shortener/handlers"
+	"go-shortener/middleware"
 	"go-shortener/repositories"
 	"go-shortener/services"
 
@@ -13,8 +14,10 @@ func RegisterURLRoutes(router *gin.Engine) {
 	urlService := services.NewURLService(urlRepo)
 	urlHandler := handlers.NewURLHandler(urlService)
 
+	router.GET("/api/v1/urls/:shortCode", urlHandler.RedirectHandler)
+
 	urls := router.Group("/api/v1/urls")
-	// urls.Use(middleware.)
+	urls.Use(middleware.AuthMiddlewareHelper())
 
 	urls.POST("", urlHandler.CreateURL)
 }

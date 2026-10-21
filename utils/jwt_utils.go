@@ -2,16 +2,22 @@ package utils
 
 import (
 	"errors"
-	"os"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-func CreateToken(userId bson.ObjectID) (string, error) {
-	secretKey := os.Getenv("JWT_SECRET")
+const secretKey = "aslfdkaskflajkflajlfkdjsldkfj"
 
+func GetJWTSecret() string {
+	return secretKey
+}
+
+func CreateToken(userId bson.ObjectID) (string, error) {
+	secretKey := secretKey
+	fmt.Println("secret key " + secretKey)
 	if secretKey == "" {
 		return "", errors.New("JWT_SECRET is not configured")
 	}
@@ -23,6 +29,6 @@ func CreateToken(userId bson.ObjectID) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	// fmt.Println(token.Claims)
+
 	return token.SignedString([]byte(secretKey))
 }

@@ -20,6 +20,7 @@ func main() {
 	})
 
 	routes.RegisterAuthRoutes(router)
+	routes.RegisterURLRoutes(router)
 
 	err := router.Run(":8080")
 
