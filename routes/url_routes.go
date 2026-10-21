@@ -14,10 +14,11 @@ func RegisterURLRoutes(router *gin.Engine) {
 	urlService := services.NewURLService(urlRepo)
 	urlHandler := handlers.NewURLHandler(urlService)
 
-	router.GET("/api/v1/urls/:shortCode", urlHandler.RedirectHandler)
+	router.GET("/:shortCode", urlHandler.RedirectHandler)
 
 	urls := router.Group("/api/v1/urls")
 	urls.Use(middleware.AuthMiddlewareHelper())
 
 	urls.POST("", urlHandler.CreateURL)
+	urls.DELETE("/:id", urlHandler.DeleteURLByIDHandler)
 }

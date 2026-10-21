@@ -2,12 +2,11 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"go-shortener/services"
+	"go-shortener/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -37,25 +36,9 @@ func (h *URLHandler) CreateURL(c *gin.Context) {
 		return
 	}
 
-	userID, exists := c.Get("userID")
+	userID := utils.GetUserIDFromContext(c)
 
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Unauthorized",
-		})
-		return
-	}
-
-	id, ok := userID.(bson.ObjectID)
-
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid authenticated user",
-		})
-		return
-	}
-
-	record, err := h.urlService.CreateNewUrl(req.URL, id)
+	record, err := h.urlService.CreateNewUrl(req.URL, userID)
 
 	if err != nil {
 		if err.Error() == "invalid URL" {
@@ -78,7 +61,7 @@ func (h *URLHandler) CreateURL(c *gin.Context) {
 func (h *URLHandler) RedirectHandler(c *gin.Context) {
 	code := c.Param("shortCode")
 
-	fmt.Println("code is here")
+	// fmt.Println("code is here")
 
 	record, err := h.urlService.RedirectURL(code)
 	if err != nil {
@@ -95,4 +78,29 @@ func (h *URLHandler) RedirectHandler(c *gin.Context) {
 		return
 	}
 	c.Redirect(http.StatusFound, record.OriginalUrl)
+}
+
+func (h *URLHandler) DeleteURLByIDHandler(c *gin.Context) {
+	urlID := c.Param("id")
+
+	userID := utils.GetUserIDFromContext(c)
+
+	err := h.urlService.DeleteURLByID(urlID, userID)
+
+	if err != nil {
+		if err.Error() == "invalid URL" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal Server Error while deleting",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Record deleted successfully",
+		"data":    err,
+	})
 }

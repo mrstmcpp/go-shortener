@@ -79,3 +79,25 @@ func (s *URLService) RedirectURL(code string) (*models.Url, error) {
 	record.Clicks++
 	return record, nil
 }
+
+func (s *URLService) DeleteURLByID(urlID string, userID bson.ObjectID) error {
+	urlID = strings.TrimSpace(urlID)
+	if urlID == "" {
+		return mongo.ErrNoDocuments
+	}
+
+	id, err := bson.ObjectIDFromHex(urlID)
+	if err != nil {
+		return errors.New("invalid URL ID")
+	}
+
+	record := s.urlRepo.DeleteByIDAndUserID(id, userID)
+
+	if record != nil {
+		if errors.Is(record, mongo.ErrNoDocuments) {
+			return mongo.ErrNoDocuments
+		}
+		return record
+	}
+	return nil
+}
