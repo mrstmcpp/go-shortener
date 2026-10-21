@@ -101,3 +101,13 @@ func (s *URLService) DeleteURLByID(urlID string, userID bson.ObjectID) error {
 	}
 	return nil
 }
+
+func (s *URLService) FindByUserID(userID bson.ObjectID) ([]models.Url, error) {
+	urls, err := s.urlRepo.FindByUserID(userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return urls, nil
+}

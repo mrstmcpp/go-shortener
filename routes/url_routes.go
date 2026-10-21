@@ -21,4 +21,5 @@ func RegisterURLRoutes(router *gin.Engine) {
 
 	urls.POST("", urlHandler.CreateURL)
 	urls.DELETE("/:id", urlHandler.DeleteURLByIDHandler)
+	urls.GET("", urlHandler.FindByUserID)
 }

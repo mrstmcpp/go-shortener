@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 	"go-shortener/config"
 	"go-shortener/models"
 	"go-shortener/utils"
@@ -113,7 +112,7 @@ func (r *UrlRepository) DeleteByIDAndUserID(id, userId bson.ObjectID) error {
 		},
 	)
 
-	fmt.Println(result, id, userId)
+	// fmt.Println(result, id, userId)
 
 	if err != nil {
 		return err

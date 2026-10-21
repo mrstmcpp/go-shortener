@@ -88,7 +88,7 @@ func (h *URLHandler) DeleteURLByIDHandler(c *gin.Context) {
 	err := h.urlService.DeleteURLByID(urlID, userID)
 
 	if err != nil {
-		if err.Error() == "invalid URL" {
+		if errors.Is(err, mongo.ErrNoDocuments) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -101,6 +101,22 @@ func (h *URLHandler) DeleteURLByIDHandler(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Record deleted successfully",
-		"data":    err,
+	})
+}
+
+func (h *URLHandler) FindByUserID(c *gin.Context) {
+	userID := utils.GetUserIDFromContext(c)
+
+	urls, err := h.urlService.FindByUserID(userID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal Server Error while fetching",
+		})
+		return
+	}
+
+	c.JSON(http.StatusFound, gin.H{
+		"data": urls,
 	})
 }
