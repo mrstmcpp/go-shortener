@@ -111,3 +111,23 @@ func (s *URLService) FindByUserID(userID bson.ObjectID) ([]models.Url, error) {
 
 	return urls, nil
 }
+
+func (s *URLService) GetUserURLsPaginated(
+	userID bson.ObjectID,
+	page int64,
+	limit int64,
+	sort string,
+) ([]models.Url, int64, error) {
+	sortOrder := -1
+
+	switch sort {
+	case "newest":
+		sortOrder = -1
+	case "oldest":
+		sortOrder = 1
+	default:
+		return nil, 0, errors.New("Invalid sort option")
+	}
+
+	return s.urlRepo.FindByUserIDPaginated(userID, page, limit, sortOrder)
+}

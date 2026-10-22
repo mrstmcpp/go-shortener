@@ -18,6 +18,7 @@ func RegisterURLRoutes(router *gin.Engine) {
 
 	urls := router.Group("/api/v1/urls")
 	urls.Use(middleware.AuthMiddlewareHelper())
+	urls.Use(middleware.RateLimit())
 
 	urls.POST("", urlHandler.CreateURL)
 	urls.DELETE("/:id", urlHandler.DeleteURLByIDHandler)

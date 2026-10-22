@@ -5,6 +5,7 @@ import (
 	"go-shortener/services"
 	"go-shortener/utils"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -107,16 +108,47 @@ func (h *URLHandler) DeleteURLByIDHandler(c *gin.Context) {
 func (h *URLHandler) FindByUserID(c *gin.Context) {
 	userID := utils.GetUserIDFromContext(c)
 
-	urls, err := h.urlService.FindByUserID(userID)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal Server Error while fetching",
+	page, err := strconv.ParseInt(c.DefaultQuery("page", "1"), 10, 64)
+	if err != nil || page < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Page must be a positive integer",
 		})
 		return
 	}
 
-	c.JSON(http.StatusFound, gin.H{
+	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 64)
+	if err != nil || limit < 1 || limit > 100 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Limit must be between 1 and 100",
+		})
+		return
+	}
+
+	sort := c.DefaultQuery("sort", "newest")
+
+	urls, total, err := h.urlService.GetUserURLsPaginated(userID, page, limit, sort)
+
+	if err != nil {
+		if err.Error() == "Invalid sort option" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "sort must be newest or oldest",
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Could not retrieve URLs",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
 		"data": urls,
+		"pagination": gin.H{
+			"page":       page,
+			"limit":      limit,
+			"total":      total,
+			"totalPages": (total + limit - 1) / limit,
+		},
 	})
 }

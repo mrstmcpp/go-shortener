@@ -9,6 +9,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type UrlRepository struct {
@@ -152,4 +153,49 @@ func (r *UrlRepository) IncrementClickCount(shortCode string) error {
 		return mongo.ErrNoDocuments
 	}
 	return nil
+}
+
+func (r *UrlRepository) FindByUserIDPaginated(
+	userID bson.ObjectID,
+	page int64,
+	limit int64,
+	sortOrder int,
+) ([]models.Url, int64, error) {
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		5*time.Second,
+	)
+
+	defer cancel()
+
+	filter := bson.D{{Key: "user_id", Value: userID}}
+
+	total, err := r.collection.CountDocuments(
+		ctx,
+		filter,
+	)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	opts := options.Find().SetSkip((page - 1) * limit).SetLimit(limit).SetSort(bson.D{
+		{Key: "created_at", Value: sortOrder},
+		{Key: "_id", Value: sortOrder},
+	})
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	defer cursor.Close(ctx)
+
+	urls := make([]models.Url, 0)
+
+	if err := cursor.All(ctx, &urls); err != nil {
+		return nil, 0, err
+	}
+	return urls, total, nil
+
 }

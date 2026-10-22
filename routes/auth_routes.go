@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-shortener/handlers"
+	"go-shortener/middleware"
 	"go-shortener/repositories"
 	"go-shortener/services"
 
@@ -14,6 +15,8 @@ func RegisterAuthRoutes(router *gin.Engine) {
 	authHandler := handlers.NewAuthHandler(authService)
 
 	auth := router.Group("/api/v1/auth")
+	auth.Use(middleware.RateLimit())
+
 	{
 		auth.POST("/signup", authHandler.SignUp)
 		auth.POST("/signin", authHandler.SignIn)
